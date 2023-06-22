@@ -9,6 +9,8 @@ export class UserValidator extends Validator {
 	private readonly PASSWORD_MIN_LENGTH = 5;
 	private readonly PASSWORD_MAX_LENGTH = 255;
 
+	private readonly BALANCE_MIN_VALUE = 0;
+
 	constructor(private readonly user: User, readonly handler: ValidationHandler) {
 		super(handler);
 	}
@@ -17,6 +19,7 @@ export class UserValidator extends Validator {
 		this.validateName();
 		this.validateEmail();
 		this.validatePassword();
+		this.validateBalance();
 	}
   
 	private validateName() {
@@ -44,12 +47,22 @@ export class UserValidator extends Validator {
 		this.checkConstraintLength('password', password, this.PASSWORD_MIN_LENGTH, this.PASSWORD_MAX_LENGTH);
 	}
 
-	private checkConstraintRequired(field: string, constraint: string) {
+	private validateBalance() {
+		const balance = this.user.getBalance();
+
+		this.checkConstraintRequired('balance', balance);
+
+		if (balance < this.BALANCE_MIN_VALUE) {
+			this.handler.append(new Error(`"balance" cannot be less than ${this.BALANCE_MIN_VALUE}`));
+		}
+	}
+
+	private checkConstraintRequired(field: string, constraint: string | number) {
 		if (!constraint || constraint === null) {
 			this.handler.append(new Error(`"${field}" should not be null`));
 		}
 
-		if (!constraint?.trim()) {
+		if (typeof constraint === 'string' && !constraint?.trim()) {
 			this.handler.append(new Error(`"${field}" should not be empty`));
 		}
 	}

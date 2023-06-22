@@ -10,17 +10,18 @@ export class User extends AggregateRoot<UserID> {
     private name: string,
     private email: string,
     private password: string,
+    private balance: number,
     private createdAt: Date,
     private updatedAt: Date
 	) {
 		super(id);
 	}
 
-	static create({ name, email, password }: CreateUserAggregate): User {
+	static create({ name, email, password, balance }: CreateUserAggregate): User {
 		const id = UserID.generate();
 		const now = new Date();
 
-		return new User(id, name, email, password, now, now);
+		return new User(id, name, email, password, balance, now, now);
 	}
 
 	validate(handler: ValidationHandler): void {
@@ -37,6 +38,10 @@ export class User extends AggregateRoot<UserID> {
 
 	public getPassword(): string {
 		return this.password;
+	}
+	
+	public getBalance(): number {
+		return this.balance;
 	}
 
 	public getCreatedAt(): Date {
