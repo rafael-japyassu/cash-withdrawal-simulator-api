@@ -5,7 +5,7 @@ export default defineConfig({
 	plugins: [viteTsConfigPaths()],
 	test: {
 		coverage: {
-			exclude: ['src/domain/@core/*.ts', 'src/domain/validation/**/*.ts']
+			exclude: ['src/domain/@core/*.ts', 'src/domain/validation/**/*.ts', 'src/utils/**/*.ts']
 		}
 	}
 });

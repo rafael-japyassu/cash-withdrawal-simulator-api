@@ -8,10 +8,12 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.32.2"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
     "@types/node": "^20.3.1",
     "@typescript-eslint/eslint-plugin": "^5.60.0",
     "@typescript-eslint/parser": "^5.60.0",
