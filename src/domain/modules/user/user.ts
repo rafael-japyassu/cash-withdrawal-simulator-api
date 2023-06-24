@@ -3,6 +3,7 @@ import { UserID } from './user-id';
 import { ValidationHandler } from '@/domain/validation/validation-handler';
 import { CreateUserAggregate } from './types/create-user';
 import { UserValidator } from './validators/user-validator';
+import { BuildUserAggregate } from './types/build-user';
 
 export class User extends AggregateRoot<UserID> {
 	constructor(
@@ -17,11 +18,38 @@ export class User extends AggregateRoot<UserID> {
 		super(id);
 	}
 
-	public static create({ name, email, password, balance }: CreateUserAggregate): User {
+	public static create({
+		name,
+		email,
+		password,
+		balance,
+	}: CreateUserAggregate): User {
 		const id = UserID.generate();
 		const now = new Date();
 
 		return new User(id, name, email, password, balance, now, now);
+	}
+
+	public static toAggregate({
+		name,
+		email,
+		password,
+		balance,
+		createdAt,
+		id,
+		updatedAt,
+	}: BuildUserAggregate): User {
+		const userId = UserID.from(id);
+
+		return new User(
+			userId,
+			name,
+			email,
+			password,
+			balance,
+			createdAt,
+			updatedAt
+		);
 	}
 
 	public update({ balance, email, name, password }: CreateUserAggregate): User {
@@ -49,7 +77,7 @@ export class User extends AggregateRoot<UserID> {
 	public getPassword(): string {
 		return this.password;
 	}
-	
+
 	public getBalance(): number {
 		return this.balance;
 	}
@@ -61,5 +89,4 @@ export class User extends AggregateRoot<UserID> {
 	public getUpdatedAt(): Date {
 		return this.updatedAt;
 	}
-  
 }

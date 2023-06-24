@@ -1,6 +1,7 @@
-import { DefaultWithdrawMoneyUseCase } from '@/application/modules/transaction/use-cases/withdraw-money/default-withdraw-money-use-case';
-import { WithdrawMoneyCommand } from '@/application/modules/transaction/use-cases/withdraw-money/withdraw-money-command';
-import { WithdrawMoneyUseCase } from '@/application/modules/transaction/use-cases/withdraw-money/withdraw-money-use-case';
+import { InvalidAmountBankWithdrawalException } from '@/application/modules/transaction/exceptions/invalid-amount-bank-withdrawal-exception';
+import { DefaultWithdrawMoneyUseCase } from '@/application/modules/transaction/use-cases/withdrawal-money/default-withdrawal-money-use-case';
+import { WithdrawalMoneyCommand } from '@/application/modules/transaction/use-cases/withdrawal-money/withdrawal-money-command';
+import { WithdrawMoneyUseCase } from '@/application/modules/transaction/use-cases/withdrawal-money/withdrawal-money-use-case';
 import { UserNotFoundException } from '@/application/modules/user/exceptions/user-not-found-exception';
 import { CreateUserCommand } from '@/application/modules/user/use-cases/create-user/create-user-command';
 import { CreateUserUseCase } from '@/application/modules/user/use-cases/create-user/create-user-use-case';
@@ -25,69 +26,127 @@ describe('DefaultWithdrawMoneyUseCase', () => {
 		hashGateway = new BCryptGateway();
 		userGateway = new InMemoryUserRepository();
 		createUserUseCase = new DefaultCreateUserUseCase(userGateway, hashGateway);
-		withdrawMoneyUseCase = new DefaultWithdrawMoneyUseCase(transactionGateway, userGateway);
+		withdrawMoneyUseCase = new DefaultWithdrawMoneyUseCase(
+			transactionGateway,
+			userGateway
+		);
 	});
 
 	it('should be able to create a valid Withdraw', async () => {
 		const createUserCommand: CreateUserCommand = {
 			name: 'John Doe',
 			email: 'johndoe@email.com',
-			password: '123123'
+			password: '123123',
 		};
 
 		const responseUser = await createUserUseCase.execute(createUserCommand);
 
 		const user = responseUser.getRight();
 
-		const withdrawMoneyCommand: WithdrawMoneyCommand = {
+		const withdrawalMoneyCommand: WithdrawalMoneyCommand = {
 			userId: user.id,
-			value: 1000
+			value: 470,
 		};
-		
-		const responseWithdraw = await withdrawMoneyUseCase.execute(withdrawMoneyCommand);
+
+		const responseWithdraw = await withdrawMoneyUseCase.execute(
+			withdrawalMoneyCommand
+		);
 
 		expect(responseWithdraw.isLeft()).toBeFalsy();
 		expect(responseWithdraw.isRight()).toBeTruthy();
-		expect(typeof responseWithdraw.getRight().transactionId === 'string').toBeTruthy();
-		expect(responseWithdraw.getRight().currentValue).toBe(9000);
+		expect(
+			typeof responseWithdraw.getRight().transactionId === 'string'
+		).toBeTruthy();
+		expect(responseWithdraw.getRight().currentValue).toBe(9530);
+		expect(responseWithdraw.getRight().notes).toEqual(
+			expect.arrayContaining([
+				{
+					note: '100',
+					quantity: 4,
+				},
+				{
+					note: '50',
+					quantity: 1,
+				},
+				{
+					note: '20',
+					quantity: 1,
+				},
+			])
+		);
 	});
 
-	it('should not be able to create a valid Withdraw a non-use', async () => {
-		const withdrawMoneyCommand: WithdrawMoneyCommand = {
+	it('should not be able to create a valid Withdraw a invalid value', async () => {
+		const withdrawalMoneyCommand: WithdrawalMoneyCommand = {
 			userId: 'non-user',
-			value: 1000
+			value: 15,
 		};
-		
-		const responseWithdraw = await withdrawMoneyUseCase.execute(withdrawMoneyCommand);
 
-		const errorMessages = responseWithdraw.getLeft().getErrors().map(error => error);
+		const responseWithdraw = await withdrawMoneyUseCase.execute(
+			withdrawalMoneyCommand
+		);
+
+		const errorMessages = responseWithdraw
+			.getLeft()
+			.getErrors()
+			.map((error) => error);
 
 		expect(responseWithdraw.isLeft()).toBeTruthy();
 		expect(responseWithdraw.isRight()).toBeFalsy();
 		expect(responseWithdraw.getLeft().getErrors().length).toBe(1);
-		expect(errorMessages).toEqual(expect.arrayContaining([new UserNotFoundException]));
+		expect(errorMessages).toEqual(
+			expect.arrayContaining([new InvalidAmountBankWithdrawalException()])
+		);
+	});
+
+	it('should not be able to create a valid Withdraw a non-use', async () => {
+		const withdrawalMoneyCommand: WithdrawalMoneyCommand = {
+			userId: 'non-user',
+			value: 1000,
+		};
+
+		const responseWithdraw = await withdrawMoneyUseCase.execute(
+			withdrawalMoneyCommand
+		);
+
+		const errorMessages = responseWithdraw
+			.getLeft()
+			.getErrors()
+			.map((error) => error);
+
+		expect(responseWithdraw.isLeft()).toBeTruthy();
+		expect(responseWithdraw.isRight()).toBeFalsy();
+		expect(responseWithdraw.getLeft().getErrors().length).toBe(1);
+		expect(errorMessages).toEqual(
+			expect.arrayContaining([new UserNotFoundException()])
+		);
 	});
 
 	it('should be able to create a valid Withdraw with a invalid user balance result', async () => {
 		const createUserCommand: CreateUserCommand = {
 			name: 'John Doe',
 			email: 'johndoe@email.com',
-			password: '123123'
+			password: '123123',
 		};
 
 		const responseUser = await createUserUseCase.execute(createUserCommand);
 
 		const user = responseUser.getRight();
 
-		const withdrawMoneyCommand: WithdrawMoneyCommand = {
+		const WithdrawalMoneyCommand: WithdrawalMoneyCommand = {
 			userId: user.id,
-			value: 15000
+			value: 15000,
 		};
-		
-		const responseWithdraw = await withdrawMoneyUseCase.execute(withdrawMoneyCommand);
+
+		const responseWithdraw = await withdrawMoneyUseCase.execute(
+			WithdrawalMoneyCommand
+		);
 
 		const expectErrorMessage = '"balance" cannot be less than 0';
-		const errorMessages = responseWithdraw.getLeft().getErrors().map(error => error.message);
+		const errorMessages = responseWithdraw
+			.getLeft()
+			.getErrors()
+			.map((error) => error.message);
 
 		expect(responseWithdraw.isLeft()).toBeTruthy();
 		expect(responseWithdraw.isRight()).toBeFalsy();

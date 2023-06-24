@@ -1,15 +1,18 @@
 import { NotificationHandler } from '@/domain/validation/handler/notification-handler';
 import { Either, Left, Right } from '@/utils/either';
-import { WithdrawMoneyCommand } from './withdraw-money-command';
-import { WithdrawMoneyOutput } from './withdraw-money-output';
-import { WithdrawMoneyUseCase } from './withdraw-money-use-case';
+import { WithdrawMoneyUseCase } from './withdrawal-money-use-case';
 import { ITransactionGateway } from '@/domain/modules/transaction/gateways/transaction-gateway';
 import { IUserGateway } from '@/domain/modules/user/gateways/user-gateway';
 import { UserID } from '@/domain/modules/user/user-id';
 import { UserNotFoundException } from '@/application/modules/user/exceptions/user-not-found-exception';
 import { Transaction } from '@/domain/modules/transaction/transaction';
+import { WithdrawalMoneyCommand } from './withdrawal-money-command';
+import { WithdrawalMoneyNote, WithdrawalMoneyOutput } from './withdrawal-money-output';
+import { InvalidAmountBankWithdrawalException } from '../../exceptions/invalid-amount-bank-withdrawal-exception';
 
 export class DefaultWithdrawMoneyUseCase extends WithdrawMoneyUseCase {
+	private AVAILABLE_NOTES = [100, 50, 20, 10];
+
 	constructor(
     private readonly transactionGateway: ITransactionGateway,
     private readonly userGateway: IUserGateway
@@ -20,10 +23,16 @@ export class DefaultWithdrawMoneyUseCase extends WithdrawMoneyUseCase {
 	async execute({
 		userId,
 		value,
-	}: WithdrawMoneyCommand): Promise<
-    Either<NotificationHandler, WithdrawMoneyOutput>
+	}: WithdrawalMoneyCommand): Promise<
+    Either<NotificationHandler, WithdrawalMoneyOutput>
   > {
 		const notification = NotificationHandler.create();
+		if (value % 10 !== 0) {
+			notification.append(new InvalidAmountBankWithdrawalException());
+
+			return Left.create(notification);
+		}
+		
 		const user = await this.userGateway.findById(UserID.from(userId));
 
 		if (!user) {
@@ -52,6 +61,7 @@ export class DefaultWithdrawMoneyUseCase extends WithdrawMoneyUseCase {
 
 		user.validate(notification);
 
+
 		if (notification.hasErrors()) {
 			return Left.create(notification);
 		}
@@ -60,10 +70,33 @@ export class DefaultWithdrawMoneyUseCase extends WithdrawMoneyUseCase {
 			this.transactionGateway.create(transaction),
 			this.userGateway.update(user),
 		]);
+		
+		const notesResult = this.withdrawMoneyNotes(value);
 
 		return Right.create({
 			transactionId: transaction.getId().getValue(),
 			currentValue: newBalance,
+			notes: notesResult
 		});
+	}
+
+	private withdrawMoneyNotes(value: number): WithdrawalMoneyNote[] {
+		const withdrawalNotes: Record<number, number> = {};
+		let initialValue = value;
+
+		for (const note of this.AVAILABLE_NOTES) {
+			if (initialValue >= note) {
+				const notesQuantity = Math.floor(initialValue / note);
+				withdrawalNotes[note] = notesQuantity;
+				initialValue -= note * notesQuantity;
+			}
+		}
+
+		const withdrawalResult = Object.keys(withdrawalNotes).map(note => ({
+			note,
+			quantity: withdrawalNotes[Number(note)]
+		}));
+
+		return withdrawalResult;
 	}
 }

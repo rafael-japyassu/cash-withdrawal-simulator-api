@@ -4,6 +4,18 @@ export type GenerateJwtParams = {
   secret: string;
 };
 
+export type VerifyJwtParams = {
+  token: string;
+  secret: string;
+};
+
+export type VerifyJwtResponse = {
+  id: string;
+  iat: number;
+  exp: number;
+};
+
 export interface IAuthGateway {
   generateToken(params: GenerateJwtParams): Promise<string>;
+  verify(params: VerifyJwtParams): Promise<VerifyJwtResponse>;
 }
