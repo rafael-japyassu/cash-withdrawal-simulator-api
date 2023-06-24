@@ -17,11 +17,21 @@ export class User extends AggregateRoot<UserID> {
 		super(id);
 	}
 
-	static create({ name, email, password, balance }: CreateUserAggregate): User {
+	public static create({ name, email, password, balance }: CreateUserAggregate): User {
 		const id = UserID.generate();
 		const now = new Date();
 
 		return new User(id, name, email, password, balance, now, now);
+	}
+
+	public update({ balance, email, name, password }: CreateUserAggregate): User {
+		this.name = name;
+		this.email = email;
+		this.balance = balance;
+		this.password = password;
+		this.updatedAt = new Date();
+
+		return this;
 	}
 
 	validate(handler: ValidationHandler): void {
