@@ -6,6 +6,7 @@ import { AuthenticateUseCase } from './authenticate-use-case';
 import { IUserGateway } from '@/domain/modules/user/gateways/user-gateway';
 import { IAuthGateway } from '@/domain/modules/auth/gateways/auth-gateway';
 import { IHashGateway } from '@/domain/modules/hash/gateways/hash-gateway';
+import { UserEmailPasswordIncorrectException } from '../../exceptions/user-email-password-incorrect-exception';
 
 export class DefaultAuthenticateUseCase extends AuthenticateUseCase {
 	constructor(
@@ -26,7 +27,7 @@ export class DefaultAuthenticateUseCase extends AuthenticateUseCase {
 		const user = await this.userGateway.findByEmail(email);
 
 		if (!user) {
-			notification.append(new Error('User email or password incorrect'));
+			notification.append(new UserEmailPasswordIncorrectException());
 
 			return Left.create(notification);
 		}
@@ -34,7 +35,7 @@ export class DefaultAuthenticateUseCase extends AuthenticateUseCase {
 		const matchPassword = await this.hashGateway.compare(password, user.getPassword());
 
 		if (!matchPassword) {
-			notification.append(new Error('User email or password incorrect'));
+			notification.append(new UserEmailPasswordIncorrectException());
 
 			return Left.create(notification);
 		}
@@ -43,7 +44,7 @@ export class DefaultAuthenticateUseCase extends AuthenticateUseCase {
 		const expiresIn = new Date();
 		expiresIn.setDate(expiresIn.getDate() + 1);
 		
-		const token = await this.authGateway.generateJwt({
+		const token = await this.authGateway.generateToken({
 			secret,
 			object: { id: user.getId().getValue() },
 			expiresIn: expiresIn.getTime(),

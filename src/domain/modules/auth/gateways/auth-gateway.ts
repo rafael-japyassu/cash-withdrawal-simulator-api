@@ -5,5 +5,5 @@ export type GenerateJwtParams = {
 };
 
 export interface IAuthGateway {
-  generateJwt(params: GenerateJwtParams): Promise<string>;
+  generateToken(params: GenerateJwtParams): Promise<string>;
 }
