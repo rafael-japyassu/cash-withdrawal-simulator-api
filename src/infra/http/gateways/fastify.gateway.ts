@@ -9,18 +9,25 @@ import { JwtAuthGateway } from '@/infra/modules/auth/gateways/jwt-auth.gateway';
 import { UnauthorizedException } from '@/infra/modules/auth/exceptions/unauthorized-exception';
 import { InvalidJwtException } from '@/infra/modules/auth/exceptions/invalid-jwt-exception';
 import { UserRoutes } from '@/infra/modules/user/http/routes';
+import { AuthenticateRoutes } from '@/infra/modules/auth/http/routes';
+import { TransactionRoutes } from '@/infra/modules/transaction/http/routes';
 
 export class FastifyGateway extends HttpRunner {
 	private readonly app: FastifyInstance;
 	private readonly API_ROUTE_PREFIX = '/api';
 
 	private readonly userRoutes: HttpRouter;
+	private readonly authRoutes: HttpRouter;
+	private readonly transactionRoutes: HttpRouter;
 
 	constructor() {
 		super();
 		this.app = fastify();
 
 		this.userRoutes = new UserRoutes();
+		this.authRoutes = new AuthenticateRoutes();
+		this.transactionRoutes = new TransactionRoutes();
+
 	}
 
 	protected listen(): void {
@@ -43,6 +50,8 @@ export class FastifyGateway extends HttpRunner {
 	protected initRoutes(): void {
 		const appRoutes = [
 			...this.userRoutes.getRoutes(),
+			...this.authRoutes.getRoutes(),
+			...this.transactionRoutes.getRoutes(),
 		];
 
 		this.app.register(

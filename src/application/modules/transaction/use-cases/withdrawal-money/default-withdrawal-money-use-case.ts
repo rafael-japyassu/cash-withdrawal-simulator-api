@@ -1,6 +1,6 @@
 import { NotificationHandler } from '@/domain/validation/handler/notification-handler';
 import { Either, Left, Right } from '@/utils/either';
-import { WithdrawMoneyUseCase } from './withdrawal-money-use-case';
+import { WithdrawalMoneyUseCase } from './withdrawal-money-use-case';
 import { ITransactionGateway } from '@/domain/modules/transaction/gateways/transaction-gateway';
 import { IUserGateway } from '@/domain/modules/user/gateways/user-gateway';
 import { UserID } from '@/domain/modules/user/user-id';
@@ -10,7 +10,7 @@ import { WithdrawalMoneyCommand } from './withdrawal-money-command';
 import { WithdrawalMoneyNote, WithdrawalMoneyOutput } from './withdrawal-money-output';
 import { InvalidAmountBankWithdrawalException } from '../../exceptions/invalid-amount-bank-withdrawal-exception';
 
-export class DefaultWithdrawMoneyUseCase extends WithdrawMoneyUseCase {
+export class DefaultWithdrawalMoneyUseCase extends WithdrawalMoneyUseCase {
 	private AVAILABLE_NOTES = [100, 50, 20, 10];
 
 	constructor(
@@ -60,7 +60,6 @@ export class DefaultWithdrawMoneyUseCase extends WithdrawMoneyUseCase {
 		});
 
 		user.validate(notification);
-
 
 		if (notification.hasErrors()) {
 			return Left.create(notification);

@@ -1,7 +1,7 @@
 import { InvalidAmountBankWithdrawalException } from '@/application/modules/transaction/exceptions/invalid-amount-bank-withdrawal-exception';
-import { DefaultWithdrawMoneyUseCase } from '@/application/modules/transaction/use-cases/withdrawal-money/default-withdrawal-money-use-case';
+import { DefaultWithdrawalMoneyUseCase } from '@/application/modules/transaction/use-cases/withdrawal-money/default-withdrawal-money-use-case';
 import { WithdrawalMoneyCommand } from '@/application/modules/transaction/use-cases/withdrawal-money/withdrawal-money-command';
-import { WithdrawMoneyUseCase } from '@/application/modules/transaction/use-cases/withdrawal-money/withdrawal-money-use-case';
+import { WithdrawalMoneyUseCase } from '@/application/modules/transaction/use-cases/withdrawal-money/withdrawal-money-use-case';
 import { UserNotFoundException } from '@/application/modules/user/exceptions/user-not-found-exception';
 import { CreateUserCommand } from '@/application/modules/user/use-cases/create-user/create-user-command';
 import { CreateUserUseCase } from '@/application/modules/user/use-cases/create-user/create-user-use-case';
@@ -14,19 +14,19 @@ import { InMemoryTransactionRepository } from '@/infra/modules/transaction/gatew
 import { InMemoryUserRepository } from '@/infra/modules/user/gateways/in-memory/in-memory-user.repository';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-describe('DefaultWithdrawMoneyUseCase', () => {
+describe('DefaultWithdrawalMoneyUseCase', () => {
 	let transactionGateway: ITransactionGateway;
 	let userGateway: IUserGateway;
 	let hashGateway: IHashGateway;
 	let createUserUseCase: CreateUserUseCase;
-	let withdrawMoneyUseCase: WithdrawMoneyUseCase;
+	let withdrawMoneyUseCase: WithdrawalMoneyUseCase;
 
 	beforeEach(() => {
 		transactionGateway = new InMemoryTransactionRepository();
 		hashGateway = new BCryptGateway();
 		userGateway = new InMemoryUserRepository();
 		createUserUseCase = new DefaultCreateUserUseCase(userGateway, hashGateway);
-		withdrawMoneyUseCase = new DefaultWithdrawMoneyUseCase(
+		withdrawMoneyUseCase = new DefaultWithdrawalMoneyUseCase(
 			transactionGateway,
 			userGateway
 		);
