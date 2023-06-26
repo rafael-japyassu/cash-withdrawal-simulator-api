@@ -3,5 +3,6 @@ export type AuthenticateOutput = {
   user: {
     name: string;
     email: string;
+    balance: number;
   }
 }

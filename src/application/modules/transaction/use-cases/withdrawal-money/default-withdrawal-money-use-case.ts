@@ -7,7 +7,10 @@ import { UserID } from '@/domain/modules/user/user-id';
 import { UserNotFoundException } from '@/application/modules/user/exceptions/user-not-found-exception';
 import { Transaction } from '@/domain/modules/transaction/transaction';
 import { WithdrawalMoneyCommand } from './withdrawal-money-command';
-import { WithdrawalMoneyNote, WithdrawalMoneyOutput } from './withdrawal-money-output';
+import {
+	WithdrawalMoneyNote,
+	WithdrawalMoneyOutput,
+} from './withdrawal-money-output';
 import { InvalidAmountBankWithdrawalException } from '../../exceptions/invalid-amount-bank-withdrawal-exception';
 
 export class DefaultWithdrawalMoneyUseCase extends WithdrawalMoneyUseCase {
@@ -32,7 +35,7 @@ export class DefaultWithdrawalMoneyUseCase extends WithdrawalMoneyUseCase {
 
 			return Left.create(notification);
 		}
-		
+
 		const user = await this.userGateway.findById(UserID.from(userId));
 
 		if (!user) {
@@ -69,13 +72,13 @@ export class DefaultWithdrawalMoneyUseCase extends WithdrawalMoneyUseCase {
 			this.transactionGateway.create(transaction),
 			this.userGateway.update(user),
 		]);
-		
+
 		const notesResult = this.withdrawMoneyNotes(value);
 
 		return Right.create({
 			transactionId: transaction.getId().getValue(),
 			currentValue: newBalance,
-			notes: notesResult
+			notes: notesResult,
 		});
 	}
 
@@ -91,9 +94,9 @@ export class DefaultWithdrawalMoneyUseCase extends WithdrawalMoneyUseCase {
 			}
 		}
 
-		const withdrawalResult = Object.keys(withdrawalNotes).map(note => ({
+		const withdrawalResult = Object.keys(withdrawalNotes).map((note) => ({
 			note,
-			quantity: withdrawalNotes[Number(note)]
+			quantity: withdrawalNotes[Number(note)],
 		}));
 
 		return withdrawalResult;

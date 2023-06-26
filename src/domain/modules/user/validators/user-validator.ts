@@ -58,7 +58,7 @@ export class UserValidator extends Validator {
 	}
 
 	private checkConstraintRequired(field: string, constraint: string | number) {
-		if (!constraint || constraint === null) {
+		if ((typeof constraint === 'string' && !constraint) || constraint === null) {
 			this.handler.append(new Error(`"${field}" should not be null`));
 		}
 

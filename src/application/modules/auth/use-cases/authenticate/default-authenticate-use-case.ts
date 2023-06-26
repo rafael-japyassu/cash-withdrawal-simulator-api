@@ -54,7 +54,8 @@ export class DefaultAuthenticateUseCase extends AuthenticateUseCase {
 			token,
 			user: {
 				name: user.getName(),
-				email: user.getEmail()
+				email: user.getEmail(),
+				balance: user.getBalance()
 			}
 		});
 	}

@@ -49,9 +49,11 @@ export class PgKnexUserRepository implements IUserGateway {
 	}
 
 	async update(user: User): Promise<User> {
+		const userToUpdate = this.aggregateToEntity(user);
+
 		await this.userRepository
-			.where({ id: user.getId().getValue() })
-			.update(this.aggregateToEntity(user));
+			.where('id', user.getId().getValue())
+			.update(userToUpdate, '*', { includeTriggerModifications: true });
 
 		return user;
 	}

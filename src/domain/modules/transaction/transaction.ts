@@ -5,6 +5,7 @@ import { CreateTransactionAggregate } from './type/create-transaction';
 import { TransactionType } from './type/transaction-type';
 import { TransactionValidator } from './validators/transaction-validator';
 import { UserID } from '../user/user-id';
+import { BuildTransactionAggregate } from './type/build-transaction';
 
 export class Transaction extends AggregateRoot<TransactionID> {
 	constructor(
@@ -24,6 +25,28 @@ export class Transaction extends AggregateRoot<TransactionID> {
 		const now = new Date();
 
 		return new Transaction(id, userId, title, type, value, now, now);
+	}
+
+	public static toAggregate({
+		title,
+		type,
+		userId,
+		value,
+		createdAt,
+		id,
+		updatedAt,
+	}: BuildTransactionAggregate): Transaction {
+		const transactionId = TransactionID.from(id);
+
+		return new Transaction(
+			transactionId,
+			UserID.from(userId),
+			title,
+			type,
+			value,
+			createdAt,
+			updatedAt
+		);
 	}
 
 	validate(handler: ValidationHandler): void {
