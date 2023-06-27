@@ -2,7 +2,6 @@ import { IUserGateway } from '@/domain/modules/user/gateways/user-gateway';
 import { User } from '@/domain/modules/user/user';
 import { UserID } from '@/domain/modules/user/user-id';
 import { knexConnection } from '@/infra/config/database/knex';
-import { Knex } from 'knex';
 
 const USER_TABLE = 'users';
 interface UserKnex {
@@ -16,14 +15,8 @@ interface UserKnex {
 }
 
 export class PgKnexUserRepository implements IUserGateway {
-	private userRepository: Knex.QueryBuilder;
-
-	constructor() {
-		this.userRepository = knexConnection<UserKnex>(USER_TABLE);
-	}
-
 	async findByEmail(email: string): Promise<User | undefined> {
-		const users = await this.userRepository.where({ email });
+		const users = await knexConnection<UserKnex>(USER_TABLE).where({ email });
 
 		if (!users.length) {
 			return undefined;
@@ -33,7 +26,9 @@ export class PgKnexUserRepository implements IUserGateway {
 	}
 
 	async findById(userId: UserID): Promise<User | undefined> {
-		const users = await this.userRepository.where({ id: userId.getValue() });
+		const users = await knexConnection<UserKnex>(USER_TABLE).where({
+			id: userId.getValue(),
+		});
 
 		if (!users.length) {
 			return undefined;
@@ -43,7 +38,9 @@ export class PgKnexUserRepository implements IUserGateway {
 	}
 
 	async create(user: User): Promise<User> {
-		await this.userRepository.insert(this.aggregateToEntity(user));
+		await knexConnection<UserKnex>(USER_TABLE).insert(
+			this.aggregateToEntity(user)
+		);
 
 		return user;
 	}
@@ -51,7 +48,7 @@ export class PgKnexUserRepository implements IUserGateway {
 	async update(user: User): Promise<User> {
 		const userToUpdate = this.aggregateToEntity(user);
 
-		await this.userRepository
+		await knexConnection<UserKnex>(USER_TABLE)
 			.where('id', user.getId().getValue())
 			.update(userToUpdate, '*', { includeTriggerModifications: true });
 

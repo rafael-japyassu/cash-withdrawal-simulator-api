@@ -6,7 +6,6 @@ import {
 } from '@/domain/modules/transaction/type/find-all-transaction-paginated';
 import { TransactionType } from '@/domain/modules/transaction/type/transaction-type';
 import { knexConnection } from '@/infra/config/database/knex';
-import { Knex } from 'knex';
 
 const TRANSACTION_TABLE = 'transactions';
 interface TransactionKnex {
@@ -20,15 +19,8 @@ interface TransactionKnex {
 }
 
 export class PgKnexTransactionRepository implements ITransactionGateway {
-	private transactionRepository: Knex.QueryBuilder;
-
-	constructor() {
-		this.transactionRepository =
-      knexConnection<TransactionKnex>(TRANSACTION_TABLE);
-	}
-
 	async create(transaction: Transaction): Promise<Transaction> {
-		await this.transactionRepository.insert(
+		await knexConnection<TransactionKnex>(TRANSACTION_TABLE).insert(
 			this.aggregateToEntity(transaction)
 		);
 
@@ -40,6 +32,7 @@ export class PgKnexTransactionRepository implements ITransactionGateway {
 		size,
 		userId,
 	}: FindAllTransactionPaginatedParams): Promise<FindAllTransactionPaginatedResponse> {
+
 		const [countData, transactionsKnex] = await Promise.all([
 			knexConnection<TransactionKnex>(TRANSACTION_TABLE)
 				.count('id')
