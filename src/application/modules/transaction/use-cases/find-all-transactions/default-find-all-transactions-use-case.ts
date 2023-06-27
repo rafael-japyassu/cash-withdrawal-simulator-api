@@ -14,20 +14,22 @@ export class DefaultFindAllTransactionsUseCase extends FindAllTransactionsUseCas
 	async execute(
 		{ page = 1, userId, size = 20 }: FindAllTransactionsCommand
 	): Promise<Either<NotificationHandler, FindAllTransactionsOutput>> {
-		const pageFormat = page === 0 ? 1 : page;
+		const pageFormat = page === 0 ? 1 : Number(page);
+		const sizeFormat = Number(size);
     
-		const pageData = (pageFormat - 1) * size;
+		const pageData = (pageFormat - 1) * sizeFormat;
 		const { count, transactions } = await this.transactionGateway.findAllPaginated({
 			page: pageData,
-			size,
+			size: sizeFormat,
 			userId: UserID.from(userId)
 		});
 
-		const totalPages = Math.ceil(count / size);
+		const totalPages = Math.ceil(count / sizeFormat);
 
 		return Right.create({
 			content: transactions.map(transaction => ({
 				id: transaction.getId().getValue(),
+				title: transaction.getTitle(),
 				type: transaction.getType(),
 				value: transaction.getValue(),
 				createdAt: transaction.getCreatedAt(),
@@ -36,8 +38,8 @@ export class DefaultFindAllTransactionsUseCase extends FindAllTransactionsUseCas
 			elementsInPage: transactions.length,
 			firstPage: pageFormat === 1,
 			lastPage: totalPages === 0 ? true : pageFormat === totalPages,
-			page: pageData,
-			size,
+			page: pageFormat,
+			size: sizeFormat,
 			totalElements: count
 		});
 

@@ -48,6 +48,7 @@ export class PgKnexTransactionRepository implements ITransactionGateway {
 			knexConnection<TransactionKnex>(TRANSACTION_TABLE)
 				.offset(page)
 				.limit(size)
+				.orderBy('created_at', 'desc')
 				.where({ ...(userId && { user_id: userId.getValue() }) }),
 		]);
 

@@ -2,8 +2,8 @@ import { TransactionType } from '@/domain/modules/transaction/type/transaction-t
 import { z } from 'zod';
 
 export const findAllTransactionsSchema = z.object({
-	page: z.number().min(1).optional(),
-	size: z.number().min(1).optional(),
+	page: z.string().optional().refine(page => Number(page)),
+	size: z.string().optional().refine(size => Number(size)),
 });
 
 export type FindAllTransactionsDto = z.infer<typeof findAllTransactionsSchema> & {

@@ -2,6 +2,7 @@ import { TransactionType } from '@/domain/modules/transaction/type/transaction-t
 
 type TransactionOutput = {
   id: string;
+  title: string;
   type: TransactionType;
   value: number;
   createdAt: Date;
