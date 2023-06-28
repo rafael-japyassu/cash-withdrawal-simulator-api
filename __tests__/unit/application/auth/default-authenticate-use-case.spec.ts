@@ -54,6 +54,7 @@ describe('DefaultAuthenticateUseCase', () => {
 		expect(response.getRight().user).toEqual({
 			name: createUserCommand.name,
 			email: createUserCommand.email,
+			balance: 10000
 		});
 	});
 	
